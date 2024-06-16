@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <style>
+        body {
+            font-family: Trebuchet MS, sans-serif;
+            background: linear-gradient(to bottom, #ffffff, #f0f0f0);
+            margin: 0;
+            padding: 0;
+            color: #000000;
+            background-image: url('https://images.pexels.com/photos/209831/pexels-photo-209831.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'); /* Add your background image here */
+            background-size: cover;
+            background-position: center;
+        }
+
+        .header {
+            background: linear-gradient(to bottom, #000000, rgba(255, 255, 255, 0)); 
+            color: #ffffff; /* White text color */
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0); /* Increased transparency */
+            border-radius: 10px;
+            box-shadow: 0 0 0px rgba(0, 0, 0, 0);
+        }
+
+        .search-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .search-container input[type=text] {
+            padding: 10px;
+            width: 60%;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-right: 10px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        .search-container button {
+            padding: 10px 20px;
+            background-color: #283747;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .weather-card {
+            text-align: center;
+            margin-top: 20px;
+            background-color: rgba(255, 255, 255, 0.3); /* Increased transparency */
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .weather-info {
+            margin-top: 20px;
+        }
+
+        .temperature {
+            font-size: 3rem;
+            font-weight: bold;
+        }
+
+        .description {
+            font-size: 1.5rem;
+            margin-top: 10px;
+        }
+
+        .details {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .details div {
+            flex: 0% 0% 30%; /* Three items per row */
+            background-color: rgba(255, 255, 255, 0.4); 
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            transition: background-color 0.3s;
+        }
+
+        .details div:hover {
+            background-color: rgba(240, 240, 240, 0.6); 
+        }
+
+        .details p {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+
+        .forecast-container {
+            margin-top: 20px;
+        }
+
+        .forecast-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.4); 
+            border-radius: 5px;
+            margin-bottom: 10px;
+            transition: background-color 0.3s;
+        }
+
+        .forecast-row:hover {
+            background-color: rgba(240, 240, 240, 0.8); /* Change color on hover */
+        }
+
+        .forecast-row .date, 
+        .forecast-row .temp, 
+        .forecast-row .desc {
+            flex: 1;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Weather.in</h1>
+    </div>
+
+    <div class="container">
+        <div class="search-container">
+            <input type="text" id="location-input" placeholder="Enter city name">
+            <button onclick="searchWeather()">Search</button>
+        </div>
+
+        <div class="weather-card">
+            <h2 class="location"></h2>
+            <div class="weather-info">
+                <div class="temperature"></div>
+                <div class="description"></div>
+                <div class="details">
+                    <div><p>Humidity: <span class="humidity"></span></p></div>
+                    <div><p>Wind: <span class="wind"></span></p></div>
+                    <div><p>Pressure: <span class="pressure"></span></p></div>
+                    <div><p>Sunrise: <span class="sunrise"></span></p></div>
+                    <div><p>Sunset: <span class="sunset"></span></p></div>
+                    <div><p>Visibility: <span class="visibility"></span></p></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="forecast-container" id="forecast-container"></div>
+    </div>
+
+    <script>
+        const apiKey = '062518e16d4ef9661dd580881f3e3da9';
+        const weatherEndpoint = 'https://api.openweathermap.org/data/2.5/weather';
+        const forecastEndpoint = 'https://api.openweathermap.org/data/2.5/forecast';
+
+        async function fetchWeather(city) {
+            try {
+                // Fetch current weather
+                const weatherResponse = await fetch(`${weatherEndpoint}?q=${city}&units=metric&appid=${apiKey}`);
+                const weatherData = await weatherResponse.json();
+                console.log(weatherData);
+
+                // Update current weather UI
+                document.querySelector('.location').textContent = `${weatherData.name}, ${weatherData.sys.country}`;
+                document.querySelector('.temperature').textContent = `${Math.round(weatherData.main.temp)}°C`;
+                document.querySelector('.description').textContent = weatherData.weather[0].description;
+                document.querySelector('.humidity').textContent = `${weatherData.main.humidity}%`;
+                document.querySelector('.wind').textContent = `${weatherData.wind.speed} m/s`;
+                document.querySelector('.pressure').textContent = `${weatherData.main.pressure} hPa`;
+                document.querySelector('.sunrise').textContent = new Date(weatherData.sys.sunrise * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                document.querySelector('.sunset').textContent = new Date(weatherData.sys.sunset * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                document.querySelector('.visibility').textContent = `${weatherData.visibility / 1000} km`;
+
+                // Fetch 8-day forecast
+                const forecastResponse = await fetch(`${forecastEndpoint}?q=${city}&units=metric&appid=${apiKey}`);
+                const forecastData = await forecastResponse.json();
+                console.log(forecastData);
+
+                // Clear previous forecast
+                document.getElementById('forecast-container').innerHTML = '';
+
+                // Extract and display forecast for next 8 days
+                let forecastMap = new Map();
+                forecastData.list.forEach(item => {
+                    const date = new Date(item.dt * 1000);
+                    const dateString = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    if (!forecastMap.has(dateString)) {
+                        forecastMap.set(dateString, item);
+                    }
+                });
+
+                let count = 0;
+                forecastMap.forEach((item, date) => {
+                    if (count >= 8) return;
+
+                    const forecastItem = document.createElement('div');
+                    forecastItem.classList.add('forecast-row');
+                    forecastItem.innerHTML = `
+                        <div class="date">${count === 0 ? 'Today' : count === 1 ? 'Tomorrow' : date}</div>
+                        <div class="temp">${Math.round(item.main.temp)}°C</div>
+                        <div class="desc">${item.weather[0].description}</div>
+                    `;
+                    document.getElementById('forecast-container').appendChild(forecastItem);
+                    count++;
+                });
+
+            } catch (error) {
+                console.error('Error fetching weather data:', error);
+                alert('Failed to fetch weather data. Please try again.');
+            }
+        }
+
+        function searchWeather() {
+            const input = document.querySelector('#location-input').value;
+            fetchWeather(input);
+            document.querySelector('#location-input').value = '';
+        }
+
+        // Initial fetch for a default location
+        fetchWeather('New York');
+    </script>
+</body>
+</html>
